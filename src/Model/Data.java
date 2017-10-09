@@ -12,5 +12,13 @@ public class Data {
 		 two = valueTwo;
 	
 	}
+	public String getOne() {
+		
+		return one;
+	}
+	public String getTwo() {
+		
+		return two;
+	}
 
 }

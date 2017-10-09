@@ -1,5 +1,8 @@
 package CalcGUI;
 
+import States.ComputeState;
+
+import States.ListeningState;
 //Various import fron javaFx
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -13,6 +16,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import States.ListeningState;
 /*
  * This class build the user interface for the calculator.
  * This calculator has two states.
@@ -24,7 +28,7 @@ import javafx.stage.Stage;
  */
 public class CalculatorGui extends Application {
 
-	TextField input;
+	protected TextField input;
 	GridPane numberPane;
 	GridPane operationPane;
 	int numberPaneRows = 3;
@@ -34,12 +38,13 @@ public class CalculatorGui extends Application {
 	HBox paneManager;
 	VBox windowLayout;
 	Scene frameScene;
-	
+	//String operation = null;
+
 	//the following object are used to set the listener
 	String action = "";
 	String temporary;
 	//Button button;
-	
+
 
 
 
@@ -78,7 +83,7 @@ public class CalculatorGui extends Application {
 
 				//instantiating the button object
 				buttons[i][j] = new Button();
-			   Button button  = buttons[i][j];
+				Button button  = buttons[i][j];
 
 				//number from 0 to 9 are set here
 				buttons[i][j].setText("" + count++);
@@ -125,7 +130,13 @@ public class CalculatorGui extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 
-				input.setText("");	
+				String reset = input.getText();	
+				String toBeReturn  ="";
+				for (int i = 0 ; i< reset.length()-1; i++) {
+					toBeReturn+=reset.charAt(i);
+				}
+				input.setText(toBeReturn);
+						
 			}
 
 		});
@@ -160,36 +171,64 @@ public class CalculatorGui extends Application {
 		//instantiating the operation button
 		op[0] = new Button[] {new Button("+"),new Button("-")};
 		op[1] = new Button[] {new Button("/"),new Button("*"),new Button(".")};
-		op[2] =  new Button[] {new Button("1/x"),new Button("sqrt"),new Button("=")};
+		op[2] =  new Button[] {new Button("1/X"),new Button("sqrt"),new Button("=")};
 
 		//adding the operation button to the pane and attaching the listener
 		for(int i = 0 ; i < op.length; i ++) {
-			
+
 			for(int j = 0 ; j < op[i].length;j++) {
+				//adding the opeartion button to the pane
 				operationPane.add(op[i][j], j, i);
 				Button chars = op[i][j];
+				//attaching the listener to each button on the pane
 				op[i][j].setOnAction(new EventHandler<ActionEvent>() {
 
 					@Override
 					public void handle(ActionEvent event) {
-						
+
 						String texts = null;
 						temporary = null;
-						 
+
 						//getting the content from the text editor
 						action = input.getText();
 						//getting the value of the button
-						
+
 						texts  = chars.getText();
-						if(!texts.equals("=")) {
-						//building the string to be display on the text editor
-						temporary = texts;
-						//display the new string in the text editor
-						input.setText(action + temporary);
+						//temporary = texts;
+
+						//as long as the operation is not inverse , square root or equal
+						if(!texts.equals("=") && !texts.equals("1/X") && !texts.equals("sqrt")) {
+							//building the string to be display on the text editor
+							temporary = texts;
+							//operation = temporary;
+							//display the new string in the text editor
+							input.setText(action + temporary);
+						}
+						if(texts.equals("=")) {
+
+							ListeningState  listening = new ListeningState(input.getText());
+							ComputeState transition =  listening.computer;
+							input.setText( transition.result(listening.operation));
+						}
+
+
+						if(texts.equals("1/X")) {
+
+							ListeningState  listening = new ListeningState(input.getText(), 0);
+							ComputeState transition =  listening.computer;
+							input.setText( transition.resultFromInverse(transition.operation));
+						}
+						if(texts.equals("sqrt")) {
+
+							ListeningState  listening = new ListeningState(input.getText(), 1);
+							ComputeState transition =  listening.computer;
+							input.setText( transition.resultFromInverse(transition.operation));
+						}
+						
 					}
 
-				}});
-				
+				});
+
 				operationPane.setHgap(10);
 				operationPane.setVgap(10);
 
@@ -197,8 +236,10 @@ public class CalculatorGui extends Application {
 		}
 
 	}
-	
-	
+
+
+
+
 
 	/*
 	 * this method instantiate the text field
